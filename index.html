@@ -4,29 +4,202 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="style.css" />
-    <title>LyricsSearch</title>
+    <meta name="description" content="Find lyrics for your favorite songs and artists using our modern search interface" />
+    <meta name="keywords" content="lyrics, music, search, songs, artists" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <title>LyricsSearch - Find Your Favorite Song Lyrics</title>
   </head>
   <body>
-    <header>
-      <h1>LyricsSearch</h1>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+      <span class="theme-icon">🌙</span>
+    </button>
 
-      <form id="form">
-        <input
-          type="text"
-          id="search"
-          placeholder="Enter artist or song name..."
-        />
-        <button>Search</button>
-      </form>
+    <!-- Header Section -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <h1>🎵 LyricsSearch</h1>
+          <p>Discover lyrics for millions of songs</p>
+        </div>
+        
+        <!-- Search Form -->
+        <form id="search-form" class="search-form" role="search">
+          <div class="search-input-container">
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
+              placeholder="Search for songs, artists, or lyrics..."
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search for songs or artists"
+            />
+            <button 
+              type="submit" 
+              id="search-button" 
+              class="search-button"
+              aria-label="Search"
+            >
+              <i class="icon-search">🔍</i>
+              <span>Search</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </header>
 
-    <div id="result" class="container">
-      <p>Results will be displayed here</p>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Loading Spinner -->
+      <div id="loading-spinner" class="loading-spinner hidden">
+        <div class="spinner"></div>
+        <p>Searching for lyrics...</p>
+      </div>
+
+      <!-- Error Container -->
+      <div id="error-container" class="error-container hidden"></div>
+
+      <!-- API Warning -->
+      <div id="api-warning" class="api-warning hidden">
+        <i class="icon-warning">⚠️</i>
+        <span>API response may be slow. Please be patient.</span>
+      </div>
+
+      <!-- Welcome Screen / Popular Artists -->
+      <div class="welcome-section">
+        <div id="popular-artists" class="popular-artists-section">
+          <!-- Popular artists will be rendered here -->
+        </div>
+        
+        <!-- Favorites Button -->
+        <div class="favorites-section">
+          <button class="btn btn-primary" id="favorites-btn">❤️ View Your Favorites</button>
+        </div>
+        
+        <div id="recent-searches" class="recent-searches-section">
+          <!-- Recent searches will be rendered here -->
+        </div>
+      </div>
+
+      <!-- Search Results / Lyrics Display -->
+      <div id="result-container" class="result-container">
+        <div class="welcome-screen">
+          <h2>🎵 Find Your Favorite Lyrics</h2>
+          <p>Search for any song or artist to get started</p>
+          <div class="welcome-features">
+            <div class="feature">
+              <i class="feature-icon">🔍</i>
+              <span>Search millions of songs</span>
+            </div>
+            <div class="feature">
+              <i class="feature-icon">📝</i>
+              <span>Get complete lyrics</span>
+            </div>
+            <div class="feature">
+              <i class="feature-icon">⚡</i>
+              <span>Fast and reliable</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <p>&copy; 2024 LyricsSearch. Powered by <a href="https://lyrics.ovh" target="_blank" rel="noopener">lyrics.ovh</a></p>
+        <div class="footer-links">
+          <button class="footer-link" id="settings-btn">Settings</button>
+          <button class="footer-link" id="about-btn">About</button>
+          <button class="footer-link" id="feedback-btn">Feedback</button>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Favorites Modal -->
+    <div id="favorites-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>❤️ Your Favorites</h3>
+          <button class="modal-close" aria-label="Close favorites">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="favorites-list" class="favorites-list">
+            <!-- Favorites will be rendered here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary modal-close">Close</button>
+        </div>
+      </div>
     </div>
 
-    <div id="more" class="container centered"></div>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Settings</h3>
+          <button class="modal-close" aria-label="Close settings">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-group">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="auto">Auto</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label for="font-size-select">Font Size</label>
+            <select id="font-size-select">
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="autoplay-checkbox">
+              <span class="checkmark"></span>
+              Enable preview autoplay
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="clear-data-btn">Clear All Data</button>
+          <button class="btn btn-primary" id="save-settings-btn">Save</button>
+        </div>
+      </div>
+    </div>
 
-    <script src="script.js"></script>
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Accessibility Skip Links -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <a href="#search-input" class="skip-link">Skip to search</a>
+
+    <!-- Scripts -->
+    <script type="module" src="src/main.ts"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
