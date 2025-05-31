@@ -62,11 +62,9 @@ export class LyricsSearchApp {
     // Pagination
     document.addEventListener("pageChange", (event: Event) => {
       const customEvent = event as CustomEvent<{
-        url: string;
         direction: "next" | "prev";
       }>;
       this.handlePageChange(
-        customEvent.detail.url,
         customEvent.detail.direction,
       );
     });
@@ -99,17 +97,21 @@ export class LyricsSearchApp {
       return;
     }
 
+    // Clear cache for fresh search results
+    apiService.clearCache();
+
     this.updateState({
       isLoading: true,
       searchTerm: query,
       error: null,
       currentLyrics: null,
+      currentPage: 1,
     });
 
     this.uiManager.showLoadingState();
 
     try {
-      const response = await apiService.searchSongs(query);
+      const response = await apiService.searchSongs(query, 1);
 
       this.updateState({
         isLoading: false,
@@ -157,7 +159,6 @@ export class LyricsSearchApp {
   }
 
   public async handlePageChange(
-    url: string,
     direction: "next" | "prev",
   ): Promise<void> {
     this.updateState({
@@ -168,7 +169,11 @@ export class LyricsSearchApp {
     this.uiManager.showLoadingState();
 
     try {
-      const response = await apiService.getMoreSongs(url);
+      const newPage = direction === "next" 
+        ? this.state.currentPage + 1 
+        : this.state.currentPage - 1;
+      
+      const response = await apiService.getMoreSongs(this.state.searchTerm, newPage);
 
       this.updateState({
         isLoading: false,
@@ -177,10 +182,7 @@ export class LyricsSearchApp {
         hasPrevPage: !!response.prev,
         nextPageUrl: response.next,
         prevPageUrl: response.prev,
-        currentPage:
-          direction === "next"
-            ? this.state.currentPage + 1
-            : this.state.currentPage - 1,
+        currentPage: newPage,
       });
 
       this.uiManager.renderSearchResults(response.data, this.state);

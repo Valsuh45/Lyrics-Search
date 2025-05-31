@@ -89,6 +89,9 @@ export class UIManager {
     this.hideError();
     this.hideLoading();
 
+    // Hide popular artists when showing search results
+    this.hidePopularArtists();
+
     if (songs.length === 0) {
       this.showNoResults();
       return;
@@ -291,6 +294,9 @@ export class UIManager {
   }
 
   public showNoResults(): void {
+    // Hide popular artists when showing no results
+    this.hidePopularArtists();
+
     this.resultContainer.innerHTML = `
       <div class="no-results">
         <i class="icon-no-results">🔍</i>
@@ -310,6 +316,9 @@ export class UIManager {
         <p>Search for any song or artist to get started</p>
       </div>
     `;
+    
+    // Show popular artists when returning to welcome screen
+    this.showPopularArtists();
   }
 
   public showApiWarning(): void {
@@ -373,10 +382,10 @@ export class UIManager {
   private attachPaginationListeners(): void {
     document.querySelectorAll('.pagination-btn').forEach(button => {
       button.addEventListener('click', (e) => {
-        const target = e.target as HTMLButtonElement;
-        const url = target.getAttribute('data-url')!;
+        const target = e.currentTarget as HTMLButtonElement;
         const direction = target.getAttribute('data-action') as 'next' | 'prev';
-        this.dispatchCustomEvent('pageChange', { url, direction });
+        // We no longer need the URL parameter for client-side pagination
+        this.dispatchCustomEvent('pageChange', { url: '', direction });
       });
     });
   }
@@ -623,5 +632,19 @@ export class UIManager {
 
   public setSearchValue(value: string): void {
     this.searchInput.value = value;
+  }
+
+  private hidePopularArtists(): void {
+    const popularArtistsContainer = document.getElementById('popular-artists');
+    if (popularArtistsContainer) {
+      popularArtistsContainer.style.display = 'none';
+    }
+  }
+
+  private showPopularArtists(): void {
+    const popularArtistsContainer = document.getElementById('popular-artists');
+    if (popularArtistsContainer) {
+      popularArtistsContainer.style.display = 'block';
+    }
   }
 }
