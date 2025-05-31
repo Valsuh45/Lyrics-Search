@@ -91,7 +91,7 @@ export interface PopularArtist {
 // Event Types
 export type SearchEvent = CustomEvent<{ query: string }>;
 export type LyricsEvent = CustomEvent<{ artist: string; title: string }>;
-export type PageChangeEvent = CustomEvent<{ url: string; direction: 'next' | 'prev' }>;
+export type PageChangeEvent = CustomEvent<{ direction: 'next' | 'prev' }>;
 
 // API Error Types
 export interface ApiError {

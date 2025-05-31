@@ -1,6 +1,18 @@
 import { LyricsSearchApp } from "./app";
 import { StorageManager } from "./storage";
 
+// Apply theme immediately to prevent flickering
+const getCurrentTheme = (): string => {
+  return localStorage.getItem("lyrics-search-theme") || "light";
+};
+
+const applyThemeImmediate = (theme: string) => {
+  document.documentElement.setAttribute("data-theme", theme);
+};
+
+// Apply saved theme immediately
+applyThemeImmediate(getCurrentTheme());
+
 // Initialize the application when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   try {
@@ -41,10 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Theme management
-    const getCurrentTheme = (): string => {
-      return localStorage.getItem("lyrics-search-theme") || "light";
-    };
-
     const updateThemeIcon = (theme: string) => {
       const themeIcon = document.querySelector(".theme-icon");
       if (themeIcon) {

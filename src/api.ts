@@ -3,16 +3,39 @@ import { SearchResponse, LyricsResponse, ApiError, Song } from "./types";
 
 class ApiService {
   private readonly baseURL = "https://api.lyrics.ovh";
-  private readonly corsProxy = "https://cors-anywhere.herokuapp.com/";
+  private searchCache: Map<string, Song[]> = new Map();
+  private readonly pageSize = 25;
+
+  /**
+   * Clear search cache
+   */
+  clearCache(): void {
+    this.searchCache.clear();
+  }
 
   /**
    * Search for songs by artist or song name
    */
-  async searchSongs(query: string): Promise<SearchResponse> {
+  async searchSongs(query: string, page: number = 1): Promise<SearchResponse> {
     try {
+      const cacheKey = query.toLowerCase();
+      
+      // If we have cached results, use client-side pagination
+      if (this.searchCache.has(cacheKey)) {
+        const allResults = this.searchCache.get(cacheKey)!;
+        return this.paginateResults(allResults, page, query);
+      }
+
       const response: AxiosResponse<SearchResponse> = await axios.get(
         `${this.baseURL}/suggest/${encodeURIComponent(query)}`,
       );
+      
+      // Cache all results for client-side pagination
+      if (response.data.data) {
+        this.searchCache.set(cacheKey, response.data.data);
+        return this.paginateResults(response.data.data, page, query);
+      }
+      
       return response.data;
     } catch (error) {
       throw this.handleApiError(error, "Failed to search songs");
@@ -39,17 +62,33 @@ class ApiService {
   }
 
   /**
-   * Get more songs using pagination URL
+   * Get more songs using pagination (client-side implementation)
    */
-  async getMoreSongs(url: string): Promise<SearchResponse> {
+  async getMoreSongs(searchTerm: string, page: number): Promise<SearchResponse> {
     try {
-      // Use CORS proxy for pagination URLs
-      const proxyUrl = url.startsWith("http") ? `${this.corsProxy}${url}` : url;
-      const response: AxiosResponse<SearchResponse> = await axios.get(proxyUrl);
-      return response.data;
+      return await this.searchSongs(searchTerm, page);
     } catch (error) {
       throw this.handleApiError(error, "Failed to load more songs");
     }
+  }
+
+  /**
+   * Client-side pagination helper
+   */
+  private paginateResults(allResults: Song[], page: number, searchTerm: string): SearchResponse {
+    const startIndex = (page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    const paginatedResults = allResults.slice(startIndex, endIndex);
+    
+    const hasNext = endIndex < allResults.length;
+    const hasPrev = page > 1;
+    
+    return {
+      data: paginatedResults,
+      total: allResults.length,
+      next: hasNext ? `page=${page + 1}&q=${encodeURIComponent(searchTerm)}` : undefined,
+      prev: hasPrev ? `page=${page - 1}&q=${encodeURIComponent(searchTerm)}` : undefined
+    };
   }
 
   /**
